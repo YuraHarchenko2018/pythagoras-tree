@@ -1,0 +1,15 @@
+#ctx {
+    margin: 100px 350px;
+    width: 1200px;
+    height: 720px;
+    border: 1px solid black;
+}
+.range_wrapper {
+    width: 135px;
+    height: 25px;
+    padding: 8px;
+    border: 1px solid green;
+    position: fixed;
+    left: 358px;
+    top: 66px;
+}
