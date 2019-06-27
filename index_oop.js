@@ -7,8 +7,8 @@ class Tree {
         this.ctx.lineWidth = 1       // толщина линии
         this.ctx.fillStyle = 'black' // цвет    линии
         
-        this.degrBase = 45
-        this.degr = this.degrBase * 2
+        this.degrBase = 30
+        this.degr = this.degrBase
 
         this.set_default()
         this.handleRange()
@@ -16,6 +16,7 @@ class Tree {
 
     set_default() {
         this.length = 160
+        this.step_value = 10
         
         this.baseX = 600
         this.baseY = 720
@@ -51,73 +52,97 @@ class Tree {
 
     makeTree() {
         this.ctx.beginPath()
-        this.ctx.moveTo(this.baseX, this.baseY); //передвигаем перо
-        this.ctx.lineTo(this.lineX, this.lineY); //рисуем линию
+        this.ctx.moveTo(this.baseX, this.baseY); // передвигаем перо
+        this.ctx.lineTo(this.lineX, this.lineY); // рисуем линию
 
-        for (let i = 0; i < 10; i++) {
-            this.new_createBranch('right')
+        this.direction = 'right'
+        for (let i = 0; i < this.step_value; i++) {
+            this.new_createBranch(i)
         }
 
         this.set_default()
-        this.ctx.moveTo(this.lineX, this.lineY); //передвигаем перо
-        this.degr = this.degrBase * 2
+        this.ctx.moveTo(this.lineX, this.lineY); // передвигаем перо
+        this.degr = this.degrBase
 
-        for (let i = 0; i < 10; i++) {
-            this.new_createBranch('left')
+        this.direction = 'left'
+        for (let i = 0; i < this.step_value; i++) {
+            this.new_createBranch(i)
         }
 
         this.ctx.stroke()
         this.ctx.closePath()
     }
 
-    new_createBranch(directionStatus) {
-        this.degr -= this.degrBase
-        if(this.degr <= 0) this.degr = 360 + this.degr
-
-        if(this.degr > 0 && this.degr < 90) {
-            if(directionStatus == 'right') {
-                this.do_1_section()
-            }
-            if(directionStatus == 'left') {
-                this.do_2_section()
-            }
+    new_createBranch(i) {
+        let degr_str = String(this.degrBase)
+        let coefficient = 1
+        if(degr_str.length > 1) {
+            coefficient = degr_str.slice(0, 1)
         }
-        if(this.degr > 90 && this.degr < 180) {
-            if(directionStatus == 'right') {
-                this.do_2_section()
-            }
-            if(directionStatus == 'left') {
-                this.do_1_section()
-            }
-        }
-        if(this.degr > 180 && this.degr < 270) {
-            if(directionStatus == 'right') {
-                this.do_3_section()
-            }
-            if(directionStatus == 'left') {
-                this.do_4_section()
-            }
-        }
-        if(this.degr > 270 && this.degr < 360) {
-            if(directionStatus == 'right') {
-                this.do_4_section()
-            }
-            if(directionStatus == 'left') {
-                this.do_3_section()
-            }
+        
+        if(i != 0) {
+            this.degr -= Number(this.degrBase ) // / coefficient
+        } else if(this.degr == 0) {
+            this.degr -= Number(this.degrBase ) // / coefficient
         }
 
-        if(this.degr == 90)  this.lineY -= this.length
-        if(this.degr == 180) this.lineX -= this.length
-        if(this.degr == 270) this.lineY += this.length
-        if(this.degr == 360) this.lineX += this.length
+        this.count_angle()
+
+        
+        this.step_value--
+        //this.direction = 'left'
+        // for (let i = 0; i < this.step_value; i++) {
+        //     this.new_createBranch(i)
+        // }
 
         this.length = this.length / 2
-
-        this.ctx.lineTo(this.lineX, this.lineY)
-
     }
 
+    count_angle() {
+        if(this.degr <= 0) this.degr = 360 + this.degr
+
+  
+        if(this.degr > 0 && this.degr < 90) {
+            this.do_1_section()
+        }
+        if(this.degr > 90 && this.degr < 180) {
+            this.do_2_section()
+        }
+        if(this.degr > 180 && this.degr < 270) {
+            this.do_3_section()
+        }
+        if(this.degr > 270 && this.degr < 360) {
+            this.do_4_section()
+        }
+
+
+        /////////
+        if(this.degr == 90)  this.lineY -= this.length
+
+        if(this.degr == 180) {
+            if(this.direction == "right") {
+                this.lineX -= this.length
+            }
+            if(this.direction == "left") {
+                this.lineX += this.length
+            }
+        }
+        if(this.degr == 270) this.lineY += this.length
+
+        if(this.degr == 360) {
+            if(this.direction == "right") {
+                this.lineX += this.length
+            }
+            if(this.direction == "left") {
+                this.lineX -= this.length
+            }
+        }
+
+
+        this.ctx.lineTo(this.lineX, this.lineY)
+    }
+
+    ///////
     do_1_section() {
         let degr = this.degr
         let radian = degr * Math.PI / 180
@@ -128,8 +153,14 @@ class Tree {
         let yLength = this.length * sin
         let xLength = this.length * cos
         
-        this.lineX += xLength
-        this.lineY -= yLength
+        if(this.direction == "right") {
+            this.lineX += xLength
+            this.lineY -= yLength
+        }
+        if(this.direction == "left") {
+            this.lineX -= xLength
+            this.lineY -= yLength
+        }
     }
 
     do_2_section() {
@@ -142,8 +173,14 @@ class Tree {
         let xLength = this.length * sin
         let yLength = this.length * cos
         
-        this.lineX -= xLength
-        this.lineY -= yLength
+        if(this.direction == "right") {
+            this.lineX -= xLength
+            this.lineY -= yLength
+        }
+        if(this.direction == "left") {
+            this.lineX += xLength
+            this.lineY -= yLength
+        }
     }
 
     do_3_section() {
@@ -156,8 +193,14 @@ class Tree {
         let yLength = this.length * sin
         let xLength = this.length * cos
         
-        this.lineX -= xLength
-        this.lineY += yLength
+        if(this.direction == "right") {
+            this.lineX -= xLength
+            this.lineY += yLength
+        }
+        if(this.direction == "left") {
+            this.lineX += xLength
+            this.lineY += yLength
+        }
     }
 
     do_4_section() {
@@ -170,11 +213,21 @@ class Tree {
         let xLength = this.length * sin
         let yLength = this.length * cos
         
-        this.lineX += xLength
-        this.lineY += yLength
+        if(this.direction == "right") {
+            this.lineX += xLength
+            this.lineY += yLength
+        }
+        if(this.direction == "left") {
+            this.lineX -= xLength
+            this.lineY += yLength
+        }
     }
 
 }
 
 const Tree_ex = new Tree()
       Tree_ex.makeTree()
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
