@@ -16,7 +16,7 @@ class Tree {
 
     set_default() {
         this.length = 160 // первоначальная длинна лнии
-        this.step_value = 3 // кол-во шагов (росования)
+        this.step_value = 3 // кол-во шагов (рисования)
         
         this.baseX = 600 // дефолтная ширина
         this.baseY = 720 // дефолтная высота (в самом низу)
@@ -41,13 +41,13 @@ class Tree {
     rangeFunc(value) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-        this.set_default()
-
         let degrees_monitor = document.querySelector('.degrees_monitor')
             degrees_monitor.textContent = value
 
         this.degrBase = value
         this.degr = value
+
+        this.set_default()
         this.makeTree_new()
     }
 
@@ -90,13 +90,15 @@ class Tree {
     }
 
     createBranch_new(stepValue = 10, sideBool = true, degr = 45, length, lineX, lineY) {
-        this.direction = sideBool ? 'right' : 'left'
+        let direction = sideBool ? 'right' : 'left'
 
         if(stepValue > 0) {
             // processing
-            let result = this.count_angle_new(degr, length, lineX, lineY)
+            let result = this.count_angle_new(degr, length, lineX, lineY, direction)
             this.ctx.moveTo(lineX, lineY)
             this.ctx.lineTo(result.lineX, result.lineY)
+
+        // this.ctx.stroke()
 
             length = length / 1.6
     
@@ -106,28 +108,28 @@ class Tree {
         }
     }
 
-    count_angle_new(degr, length, lineX, lineY) {
+    count_angle_new(degr, length, lineX, lineY, side) {
         degr = Number(degr)
 
         if(degr <= 0) degr = 360 + degr
 
         if(degr > 0 && degr < 90) {
-            let result = this.do_1_section_new(lineX, lineY, length, degr)
+            let result = this.do_1_section_new(lineX, lineY, length, degr, side)
             lineX = result.lineX
             lineY = result.lineY
         }
         if(degr > 90 && degr < 180) {
-            let result = this.do_2_section_new(lineX, lineY, length, degr)
+            let result = this.do_2_section_new(lineX, lineY, length, degr, side)
             lineX = result.lineX
             lineY = result.lineY
         }
         if(degr > 180 && degr < 270) {
-            let result = this.do_3_section_new(lineX, lineY, length, degr)
+            let result = this.do_3_section_new(lineX, lineY, length, degr, side)
             lineX = result.lineX
             lineY = result.lineY
         }
         if(degr > 270 && degr < 360) {
-            let result = this.do_4_section_new(lineX, lineY, length, degr)
+            let result = this.do_4_section_new(lineX, lineY, length, degr, side)
             lineX = result.lineX
             lineY = result.lineY
         }
@@ -136,20 +138,20 @@ class Tree {
         if(degr == 90)  lineY -= length
 
         if(degr == 180) {
-            if(this.direction == "right") {
+            if(side == "right") {
                 lineX -= length
             }
-            if(this.direction == "left") {
+            if(side == "left") {
                 lineX += length
             }
         }
         if(degr == 270) lineY += length
 
         if(degr == 360) {
-            if(this.direction == "right") {
+            if(side == "right") {
                 lineX += length
             }
-            if(this.direction == "left") {
+            if(side == "left") {
                 lineX -= length
             }
         }
@@ -235,7 +237,7 @@ class Tree {
         }
     }
 
-    do_1_section_new(lineX, lineY, length, degr) {
+    do_1_section_new(lineX, lineY, length, degr, side) {
         let radian = degr * Math.PI / 180
     
         // if turn right
@@ -244,11 +246,11 @@ class Tree {
         let yLength = length * sin
         let xLength = length * cos
         
-        if(this.direction == "right") {
+        if(side == "right") {
             lineX += xLength
             lineY -= yLength
         }
-        if(this.direction == "left") {
+        if(side == "left") {
             lineX -= xLength
             lineY -= yLength
         }
@@ -279,7 +281,7 @@ class Tree {
         }
     }
 
-    do_2_section_new(lineX, lineY, length, degr) {
+    do_2_section_new(lineX, lineY, length, degr, side) {
         degr = degr - 90
         let radian = degr * Math.PI / 180
     
@@ -289,11 +291,11 @@ class Tree {
         let xLength = length * sin
         let yLength = length * cos
         
-        if(this.direction == "right") {
+        if(side == "right") {
             lineX -= xLength
             lineY -= yLength
         }
-        if(this.direction == "left") {
+        if(side== "left") {
             lineX += xLength
             lineY -= yLength
         }
@@ -324,7 +326,7 @@ class Tree {
         }
     }
 
-    do_3_section_new(lineX, lineY, length, degr) {
+    do_3_section_new(lineX, lineY, length, degr, side) {
         degr = degr - 180
         let radian = degr * Math.PI / 180
     
@@ -334,11 +336,11 @@ class Tree {
         let xLength = length * sin
         let yLength = length * cos
         
-        if(this.direction == "right") {
+        if(side == "right") {
             lineX -= xLength
             lineY += yLength
         }
-        if(this.direction == "left") {
+        if(side == "left") {
             lineX += xLength
             lineY += yLength
         }
@@ -369,7 +371,7 @@ class Tree {
         }
     }
 
-    do_4_section_new(lineX, lineY, length, degr) {
+    do_4_section_new(lineX, lineY, length, degr, side) {
         degr = degr - 270
         let radian = degr * Math.PI / 180
     
@@ -379,11 +381,11 @@ class Tree {
         let xLength = length * sin
         let yLength = length * cos
         
-        if(this.direction == "right") {
+        if(side == "right") {
             lineX += xLength
             lineY += yLength
         }
-        if(this.direction == "left") {
+        if(side == "left") {
             lineX -= xLength
             lineY += yLength
         }
@@ -398,29 +400,3 @@ class Tree {
 
 const Tree_ex = new Tree()
       Tree_ex.makeTree_new()
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-var fill_state = {}
-
-function test_recursion(test_counter_arg, side) {
-    if(test_counter_arg > 0) {
-        let keyValue = fill_state[test_counter_arg]
-
-        if(typeof(keyValue) != "undefined" && keyValue !== null) {
-            fill_state[test_counter_arg].push(side)
-        } else {
-            fill_state[test_counter_arg] = [side]
-        }
-
-        test_counter_arg--
-        test_recursion(test_counter_arg, side)
-        test_recursion(test_counter_arg, !side)
-    }
-}
-
-test_recursion(5, false)
-test_recursion(5, true)
-console.dir(fill_state)
