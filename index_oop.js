@@ -16,7 +16,7 @@ class Tree {
 
     set_default() {
         this.length = 160 // первоначальная длинна лнии
-        this.step_value = 3 // кол-во шагов (рисования)
+        this.step_value = 10 // кол-во шагов (рисования)
         
         this.baseX = 600 // дефолтная ширина
         this.baseY = 720 // дефолтная высота (в самом низу)
@@ -29,12 +29,12 @@ class Tree {
     handleRange() {
         this.Drange.addEventListener('mousemove', (e)=>{
             if(e.which == 1) {
-                this.rangeFunc(e.target.value)
+                this.rangeFunc(Number(e.target.value))
             }
         }, false)
 
         this.Drange.addEventListener('change', (e)=>{
-                this.rangeFunc(e.target.value)
+                this.rangeFunc(Number(e.target.value))
         }, false)
     }
 
@@ -48,7 +48,7 @@ class Tree {
         this.degr = value
 
         this.set_default()
-        this.makeTree_new()
+        this.makeTree()
     }
 
     makeTree() {
@@ -57,58 +57,36 @@ class Tree {
         this.ctx.moveTo(this.baseX, this.baseY); // передвигаем перо
         this.ctx.lineTo(this.lineX, this.lineY); // рисуем линию
 
-        this.direction = 'right'
-        this.createBranch()
+        this.createBranch(this.step_value, true, this.degr, this.length, this.lineX, this.lineY)
 
         this.set_default()
         this.ctx.moveTo(this.lineX, this.lineY); // передвигаем перо
         this.degr = this.degrBase
 
-        this.direction = 'left'
-        this.createBranch()
+        this.createBranch(this.step_value, false, this.degr, this.length, this.lineX, this.lineY)
 
         this.ctx.stroke()
         this.ctx.closePath()
     }
 
-    makeTree_new() {
-        // отрисовываем столб дерева
-        this.ctx.beginPath()                     // clear field
-        this.ctx.moveTo(this.baseX, this.baseY); // передвигаем перо
-        this.ctx.lineTo(this.lineX, this.lineY); // рисуем линию
-
-        this.createBranch_new(this.step_value, true, this.degr, this.length, this.lineX, this.lineY)
-
-        this.set_default()
-        this.ctx.moveTo(this.lineX, this.lineY); // передвигаем перо
-        this.degr = this.degrBase
-
-        this.createBranch_new(this.step_value, false, this.degr, this.length, this.lineX, this.lineY)
-
-        this.ctx.stroke()
-        this.ctx.closePath()
-    }
-
-    createBranch_new(stepValue = 10, sideBool = true, degr = 45, length, lineX, lineY) {
+    createBranch(stepValue = 10, sideBool = true, degr = 45, length, lineX, lineY) {
         let direction = sideBool ? 'right' : 'left'
 
         if(stepValue > 0) {
             // processing
-            let result = this.count_angle_new(degr, length, lineX, lineY, direction)
+            let result = this.count_angle(degr, length, lineX, lineY, direction)
             this.ctx.moveTo(lineX, lineY)
             this.ctx.lineTo(result.lineX, result.lineY)
-
-        // this.ctx.stroke()
 
             length = length / 1.6
     
             stepValue--
-            this.createBranch_new(stepValue, sideBool, (degr - Number(this.degrBase)), length, result.lineX, result.lineY)
-            this.createBranch_new(stepValue, !sideBool, (degr + Number(this.degrBase)), length, result.lineX, result.lineY)
+            this.createBranch(stepValue, sideBool, (degr - Number(this.degrBase)), length, result.lineX, result.lineY)
+            this.createBranch(stepValue, sideBool, (degr + Number(this.degrBase)), length, result.lineX, result.lineY)
         }
     }
 
-    count_angle_new(degr, length, lineX, lineY, side) {
+    count_angle(degr, length, lineX, lineY, side) {
         degr = Number(degr)
 
         if(degr <= 0) degr = 360 + degr
@@ -162,81 +140,7 @@ class Tree {
         }
     }
 
-    createBranch() {
-        while(this.step_value > 0) {
-            this.count_angle()
-            this.ctx.lineTo(this.lineX, this.lineY)
-
-            this.degr -= Number(this.degrBase )
-            this.length = this.length / 1.6
-            this.step_value--
-        }
-    }
-
-    count_angle() {
-        this.degr = Number(this.degr)
-
-        if(this.degr <= 0) this.degr = 360 + this.degr
-
-        if(this.degr > 0 && this.degr < 90) {
-            this.do_1_section()
-        }
-        if(this.degr > 90 && this.degr < 180) {
-            this.do_2_section()
-        }
-        if(this.degr > 180 && this.degr < 270) {
-            this.do_3_section()
-        }
-        if(this.degr > 270 && this.degr < 360) {
-            this.do_4_section()
-        }
-
-
-        /////////
-        if(this.degr == 90)  this.lineY -= this.length
-
-        if(this.degr == 180) {
-            if(this.direction == "right") {
-                this.lineX -= this.length
-            }
-            if(this.direction == "left") {
-                this.lineX += this.length
-            }
-        }
-        if(this.degr == 270) this.lineY += this.length
-
-        if(this.degr == 360) {
-            if(this.direction == "right") {
-                this.lineX += this.length
-            }
-            if(this.direction == "left") {
-                this.lineX -= this.length
-            }
-        }
-
-    }
-
     ///////
-    do_1_section() {
-        let degr = this.degr
-        let radian = degr * Math.PI / 180
-    
-        // if turn right
-        let sin = Math.sin(radian)
-        let cos = Math.cos(radian)
-        let yLength = this.length * sin
-        let xLength = this.length * cos
-        
-        if(this.direction == "right") {
-            this.lineX += xLength
-            this.lineY -= yLength
-        }
-        if(this.direction == "left") {
-            this.lineX -= xLength
-            this.lineY -= yLength
-        }
-    }
-
     do_1_section_new(lineX, lineY, length, degr, side) {
         let radian = degr * Math.PI / 180
     
@@ -258,26 +162,6 @@ class Tree {
         return {
             "lineY": lineY,
             "lineX": lineX
-        }
-    }
-
-    do_2_section() {
-        let degr = this.degr - 90
-        let radian = degr * Math.PI / 180
-    
-        // if turn right
-        let sin = Math.sin(radian)
-        let cos = Math.cos(radian)
-        let xLength = this.length * sin
-        let yLength = this.length * cos
-        
-        if(this.direction == "right") {
-            this.lineX -= xLength
-            this.lineY -= yLength
-        }
-        if(this.direction == "left") {
-            this.lineX += xLength
-            this.lineY -= yLength
         }
     }
 
@@ -306,26 +190,6 @@ class Tree {
         }
     }
 
-    do_3_section() {
-        let degr = this.degr - 180
-        let radian = degr * Math.PI / 180
-    
-        // if turn right
-        let sin = Math.sin(radian)
-        let cos = Math.cos(radian)
-        let yLength = this.length * sin
-        let xLength = this.length * cos
-        
-        if(this.direction == "right") {
-            this.lineX -= xLength
-            this.lineY += yLength
-        }
-        if(this.direction == "left") {
-            this.lineX += xLength
-            this.lineY += yLength
-        }
-    }
-
     do_3_section_new(lineX, lineY, length, degr, side) {
         degr = degr - 180
         let radian = degr * Math.PI / 180
@@ -348,26 +212,6 @@ class Tree {
         return {
             "lineY": lineY,
             "lineX": lineX
-        }
-    }
-
-    do_4_section() {
-        let degr = this.degr - 270
-        let radian = degr * Math.PI / 180
-    
-        // if turn right
-        let sin = Math.sin(radian)
-        let cos = Math.cos(radian)
-        let xLength = this.length * sin
-        let yLength = this.length * cos
-        
-        if(this.direction == "right") {
-            this.lineX += xLength
-            this.lineY += yLength
-        }
-        if(this.direction == "left") {
-            this.lineX -= xLength
-            this.lineY += yLength
         }
     }
 
@@ -399,4 +243,4 @@ class Tree {
 }
 
 const Tree_ex = new Tree()
-      Tree_ex.makeTree_new()
+      Tree_ex.makeTree()
